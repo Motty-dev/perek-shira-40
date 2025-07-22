@@ -746,6 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const themeToggle = document.getElementById('themeToggle');
         const debugToggle = document.getElementById('debugToggle');
         const resetButton = document.querySelector('.reset-button');
+        const checkButton = document.getElementById('checkButton');
         const whatsappButton = document.querySelector('button[onclick="showWhatsAppForm()"]') || document.querySelector('.user-btn:nth-child(3)');
         const whatsappSubmit = document.querySelector('.whatsapp-submit');
         const backButtons = document.querySelectorAll('.back-button');
@@ -755,6 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
         if (debugToggle) debugToggle.addEventListener('click', toggleDebugLogs);
         if (resetButton) resetButton.addEventListener('click', confirmReset);
+        if (checkButton) checkButton.addEventListener('click', markAsRead);
         if (whatsappButton) whatsappButton.addEventListener('click', showWhatsAppForm);
         if (whatsappSubmit) whatsappSubmit.addEventListener('click', registerWhatsApp);
         if (backButtons) backButtons.forEach(button => button.addEventListener('click', showUserSelection));
