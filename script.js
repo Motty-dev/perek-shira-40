@@ -647,48 +647,57 @@ async function updateCountdown() {
             throw new Error('DOM elements missing for updateCountdown');
         }
 
-        const sunsetToday = await getSunsetTime(today);
+        // Determine which day to show based on 6 AM cutoff
+        let displayDay;
+        if (nowIsrael.getHours() < 6) {
+            // Before 6 AM - show yesterday's sunset as "today"
+            displayDay = new Date(today);
+            displayDay.setDate(displayDay.getDate() - 1);
+        } else {
+            // After 6 AM - show today's sunset
+            displayDay = new Date(today);
+        }
+
+        const sunsetToday = await getSunsetTime(displayDay);
+        const tomorrow = new Date(displayDay);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const sunsetTomorrow = await getSunsetTime(tomorrow);
         
-        // Display sunset time in Jerusalem timezone
+        // Always show the "display day" sunset time
         const sunsetTimeString = sunsetToday.toLocaleString('he-IL', {
             timeZone: 'Asia/Jerusalem',
             hour: '2-digit',
             minute: '2-digit',
             hour12: false
         });
-        
         sunsetTimeElement.textContent = sunsetTimeString;
-        console.log(`Sunset time display set to: ${sunsetTimeString}`);
-
-        // Update debug logs
-        logNowIsrael.textContent = `זמן נוכחי בישראל: ${now.toISOString()} (${nowIsrael.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' })})`;
-        logSunsetToday.textContent = `שקיעה היום: ${sunsetToday.toISOString()} (${sunsetToday.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' })})`;
-
-        let timeLeft, hours, minutes, seconds;
         
-        // Convert current time to Israel timezone for comparison
+        // Convert current time to UTC for proper comparison
         const nowUTC = new Date();
         
+        // Countdown logic
         if (nowUTC < sunsetToday) {
-            timeLeft = sunsetToday - nowUTC;
-            hours = Math.floor(timeLeft / (1000 * 60 * 60));
-            minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            // Before today's sunset - show countdown
+            const timeLeft = sunsetToday - nowUTC;
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
             countdownElement.textContent = `${hours} שעות ${minutes} דקות ${seconds} שניות`;
-            logSunsetTomorrow.textContent = 'שקיעה מחר: טוען... (לפני השקיעה של היום)';
         } else {
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const sunsetTomorrow = await getSunsetTime(tomorrow);
-            timeLeft = sunsetTomorrow - nowUTC;
-            hours = Math.floor(timeLeft / (1000 * 60 * 60));
-            minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            countdownElement.textContent = `${seconds} : ${minutes} : ${hours} `;
-            logSunsetTomorrow.textContent = `שקיעה מחר: ${sunsetTomorrow.toISOString()} (${sunsetTomorrow.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' })})`;
+            // After sunset - show waiting message
+            countdownElement.textContent = 'מחכה לשקיעה של מחר...';
         }
 
-        // Handle WhatsApp notifications
+        // Update debug logs
+        logNowIsrael.textContent = `זמן נוכחי בישראל: ${nowUTC.toISOString()} (${nowIsrael.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' })})`;
+        logSunsetToday.textContent = `שקיעה מוצגת: ${sunsetToday.toISOString()} (${sunsetToday.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' })})`;
+        logSunsetTomorrow.textContent = `שקיעה מחר: ${sunsetTomorrow.toISOString()} (${sunsetTomorrow.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' })})`;
+
+        // Handle WhatsApp notifications (use actual today, not display day)
+        const actualToday = new Date(nowIsrael);
+        actualToday.setHours(0, 0, 0, 0);
+        const actualSunsetToday = await getSunsetTime(actualToday);
+        
         const topic = localStorage.getItem('whatsappTopic');
         const whatsappNumber = localStorage.getItem('whatsappNumber');
         const logNotifications = document.getElementById('logNotifications') || document.createElement('p');
@@ -702,23 +711,36 @@ async function updateCountdown() {
         if (topic) {
             const nowHours = nowIsrael.getHours();
             const nowMinutes = nowIsrael.getMinutes();
+            const nowSeconds = nowIsrael.getSeconds();
             
-            // 10:00 AM notification
-            if (nowHours === 10 && nowMinutes === 0 && seconds < 2) {
-                const message = `בוקר טוב! השקיעה היום ב-${sunsetTimeString}`;
+            // 10:00 AM notification (use actual today's sunset)
+            if (nowHours === 10 && nowMinutes === 0 && nowSeconds < 2) {
+                const actualSunsetString = actualSunsetToday.toLocaleString('he-IL', {
+                    timeZone: 'Asia/Jerusalem',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                const message = `בוקר טוב! השקיעה היום ב-${actualSunsetString}`;
                 console.log(`Attempting 10:00 AM notification: ${message}`);
                 await sendNotification(topic, message);
                 logNotifications.textContent = `נתוני ווטסאפ: מספר: ${whatsappNumber}, טופיק: ${topic}, הודעה אחרונה: ${message}`;
             }
 
-            // 4 hours before sunset notification
-            const fourHoursBeforeSunset = new Date(sunsetToday.getTime() - 4 * 60 * 60 * 1000);
+            // 4 hours before sunset notification (use actual today's sunset)
+            const fourHoursBeforeSunset = new Date(actualSunsetToday.getTime() - 4 * 60 * 60 * 1000);
             const fourHoursBeforeLocal = new Date(fourHoursBeforeSunset.toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
             
             if (nowIsrael.getHours() === fourHoursBeforeLocal.getHours() && 
                 nowIsrael.getMinutes() === fourHoursBeforeLocal.getMinutes() && 
-                seconds < 2) {
-                const message = `4 שעות עד השקיעה ב-${sunsetTimeString}`;
+                nowSeconds < 2) {
+                const actualSunsetString = actualSunsetToday.toLocaleString('he-IL', {
+                    timeZone: 'Asia/Jerusalem',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                const message = `4 שעות עד השקיעה ב-${actualSunsetString}`;
                 console.log(`Attempting 4-hour notification: ${message}`);
                 await sendNotification(topic, message);
                 logNotifications.textContent = `נתוני ווטסאפ: מספר: ${whatsappNumber}, טופיק: ${topic}, הודעה אחרונה: ${message}`;
