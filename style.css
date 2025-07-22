@@ -716,3 +716,52 @@ html, body, .container, .user-selection, .whatsapp-form, .sunset-countdown,
     box-shadow: var(--ios-shadow);
     transition: background 0.3s ease, box-shadow 0.3s ease;
 }
+
+.add-user-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.add-user-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.user-item .user-btn {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.delete-user-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ff4757;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+.delete-user-btn:hover {
+    background: #ff3742;
+    transform: scale(1.1);
+}
+
+.add-user-btn {
+    width: 100%;
+    margin-top: 10px;
+}
