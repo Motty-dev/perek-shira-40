@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>פרק שירה - מעקב 40 יום</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle">
+    <span class="theme-icon">🌙</span>
+  </button>
+
+  <div class="container">
+    <!-- User Selection Screen -->
+    <div id="userSelection" class="user-selection">
+      <div class="user-selection-card">
+        <h2>בחר משתמש</h2>
+        <div class="user-buttons">
+          <button class="user-btn">מוטי</button>
+          <button class="user-btn">נועה</button>
+<!--           <button class="user-btn">הודעות ווטסאפ</button> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- WhatsApp Notification Form -->
+    <div id="whatsAppForm" class="whatsapp-form" style="display: none;">
+      <div class="whatsapp-card">
+        <button class="back-button">← חזור</button>
+        <h2>הרשמה להודעות ווטסאפ</h2>
+        <p>הזן מספר טלפון ישראלי לקבלת תזכורות יומיות ב-10:00 ו-4 שעות לפני השקיעה</p>
+        <div class="phone-input-group">
+          <span class="phone-prefix">🇮🇱 +972</span>
+          <input type="tel" id="phoneNumber" placeholder="594009938" maxlength="9" pattern="[0-9]{9}">
+        </div>
+        <button class="whatsapp-submit">אישור</button>
+        <div id="whatsappStatus" class="status"></div>
+      </div>
+    </div>
+
+    <!-- Main Content (hidden initially) -->
+    <div id="mainContent" style="display: none;">
+     
+
+      <!-- Header with stats -->
+      <div class="header">
+        <button class="back-button">← חזור</button>
+        <div class="user-name">שלום, <span id="currentUser"></span>!</div>
+        <div class="counter" id="counter">0</div>
+        <div class="counter-label">ימים רצופים מתוך 40</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill">
+            <span class="progress-percent" id="progressPercent">0%</span>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="totalDays">0</div>
+            <div class="stat-label">סך כל הימים</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="longestStreak">0</div>
+            <div class="stat-label">רצף הכי ארוך</div>
+          </div>
+        </div>
+      </div>
+       <!-- Sunset Countdown -->
+      <div class="sunset-countdown" id="sunsetCountdown">
+        <div class="sunset-info">
+          <span class="sunset-label">שקיעה היום:</span>
+          <span class="sunset-time" id="sunsetTime">טוען...</span>
+        </div>
+        <div class="countdown-info">
+          <span class="countdown-label">זמן עד השקיעה:</span>
+          <span class="countdown-time" id="countdownTimer">טוען...</span>
+        </div>
+      </div>
+      <!-- Content -->
+      <div class="content">
+        <h1 class="title">פֶּרֶק שִׁירָה</h1>
+        <div class="perek-shira" id="perekShira">
+          <!-- Content will be loaded by JavaScript -->
+        </div>
+
+        <div class="check-section">
+          <h3>סיימתי לקרוא את פרק שירה היום</h3>
+          <button class="check-button" id="checkButton">סמן כנקרא</button>
+          <button class="reset-button">אפס את הרצף</button>
+          <div class="status" id="status"></div>
+        </div>
+
+        <div class="reset-info">
+          ⏰ אם לא תסמן עד השקיעה, המונה יתאפס לאפס
+          <br>🎯 מטרה: 40 ימי פרק שירה רצופים!
+        </div>
+
+        <!-- Collapsible Debug Logs -->
+        <div class="debug-logs" id="debugLogs">
+          <button class="debug-toggle" id="debugToggle">הצג/הסתר לוגים</button>
+          <div class="debug-content" id="debugContent" style="display: none;">
+            <h3>לוגים לדיבוג</h3>
+            <p id="logNowIsrael">זמן נוכחי בישראל: טוען...</p>
+            <p id="logSunsetToday">שקיעה היום: טוען...</p>
+            <p id="logSunsetTomorrow">שקיעה מחר: טוען...</p>
+            <p id="logCheckStreak">בדיקת רצף: טוען...</p>
+            <p id="logNotifications">נתוני ווטסאפ: טוען...</p>
+            <p id="logTheme">מצב תצוגה: טוען...</p>
+          </div>
+        </div>
+
+        <div class="developer-credit">
+          פותח על ידי מוטי זלצר
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

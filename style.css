@@ -1,0 +1,718 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+    --bg-color: #f2f2f7;
+    --text-color: #1c1c1e;
+    --card-bg: #ffffff;
+    --border-color: #d2d2d7;
+    --primary-color: #007aff;
+    --secondary-color: #8e8e93;
+    --accent-color: #34c759;
+    --success-color: #34c759;
+    --warning-color: #ff9500;
+    --danger-color: #ff3b30;
+    --shadow: 0 2px 6px rgba(0,0,0,0.1);
+    --ios-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --gradient-start: #007aff;
+    --gradient-end: #5856d6;
+}
+
+body.dark-mode {
+    --bg-color: #1c1c1e;
+    --text-color: #ffffff;
+    --card-bg: #2c2c2e;
+    --border-color: #3a3a3c;
+    --primary-color: #0a84ff;
+    --secondary-color: #8e8e93;
+    --accent-color: #30d158;
+    --success-color: #30d158;
+    --warning-color: #ff9f0a;
+    --danger-color: #ff453a;
+    --shadow: 0 2px 6px rgba(255,255,255,0.1);
+    --ios-shadow: 0 4px 12px rgba(255,255,255,0.08);
+    --gradient-start: #0a84ff;
+    --gradient-end: #6b7280;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 0;
+    font-size: 17px;
+    font-weight: 400;
+    overscroll-behavior: none;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0;
+    background: var(--bg-color);
+    min-height: 100vh;
+    position: relative;
+    padding-top: env(safe-area-inset-top, 44px);
+    padding-bottom: env(safe-area-inset-bottom, 34px);
+    z-index: 1;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+    position:fixed;
+    top: calc(env(safe-area-inset-top, 44px) + 8px);
+    right: 12px;
+    background: var(--card-bg);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 2000;
+    box-shadow: var(--ios-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.theme-toggle .theme-icon {
+    transition: transform 0.3s ease;
+}
+
+body.dark-mode .theme-toggle .theme-icon {
+    transform: rotate(180deg);
+}
+
+.theme-toggle:active {
+    transform: scale(0.9);
+}
+
+/* User Selection */
+.user-selection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    padding: 16px;
+    z-index: 2;
+}
+
+.user-selection-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    box-shadow: var(--ios-shadow);
+    max-width: 320px;
+    width: 100%;
+    animation: slideUp 0.5s ease-out;
+}
+
+.user-selection h2 {
+    margin-bottom: 24px;
+    color: var(--text-color);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.user-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.user-btn {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: var(--ios-shadow);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.user-btn:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* WhatsApp Notification Form */
+.whatsapp-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    padding: 16px;
+    z-index: 3;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.whatsapp-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    box-shadow: var(--ios-shadow);
+    max-width: 320px;
+    width: 100%;
+    animation: slideUp 0.5s ease-out;
+    position: relative;
+}
+
+.whatsapp-card h2 {
+    margin-bottom: 16px;
+    color: var(--text-color);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.whatsapp-card p {
+    margin-bottom: 24px;
+    font-size: 16px;
+    color: var(--secondary-color);
+}
+
+.phone-input-group {
+    display: flex;
+    align-items: center;
+    background: var(--bg-color);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.phone-prefix {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-left: 8px;
+}
+
+#phoneNumber {
+    flex: 1;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-color);
+    outline: none;
+    text-align: right;
+    direction: ltr;
+}
+
+.whatsapp-submit {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: var(--ios-shadow);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.whatsapp-submit:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+}
+
+/* Sunset Countdown */
+.sunset-countdown {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: white;
+    padding: 20px;
+    border-radius: 14px;
+    margin: 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    box-shadow: var(--ios-shadow);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.sunset-info, .countdown-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.sunset-label, .countdown-label {
+    font-weight: 600;
+}
+
+.sunset-time, .countdown-time {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+.header {
+    background: var(--card-bg);
+    color: var(--text-color);
+    padding: 24px;
+    margin: 0 16px 16px;
+    border-radius: 14px;
+    box-shadow: var(--ios-shadow);
+    position: relative;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 17px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-weight: 500;
+}
+
+.user-name {
+    font-size: 18px;
+    margin: 32px 0 16px;
+    opacity: 0.9;
+    text-align: center;
+    font-weight: 500;
+}
+
+.counter {
+    font-size: 60px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-align: center;
+    color: var(--primary-color);
+    letter-spacing: -1px;
+}
+
+.counter-label {
+    font-size: 15px;
+    opacity: 0.7;
+    margin-bottom: 16px;
+    text-align: center;
+    font-weight: 400;
+}
+
+.progress-bar {
+    background: var(--border-color);
+    border-radius: 8px;
+    height: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.5s ease-in-out;
+    position: relative;
+}
+
+.progress-percent {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.stat-card {
+    background: var(--bg-color);
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    font-size: 13px;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+/* Content */
+.content {
+    padding: 0 16px 16px;
+}
+
+.title {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 24px;
+    color: var(--text-color);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.perek-shira {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    font-size: 16px;
+    line-height: 1.6;
+    height: 450px;
+    overflow-y: auto;
+    text-align: right;
+    direction: rtl;
+    box-shadow: var(--ios-shadow);
+    -webkit-overflow-scrolling: touch;
+}
+
+.perek-shira::-webkit-scrollbar {
+    display: none;
+}
+
+/* Text Formatting */
+.intro-section {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.intro-section h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.intro-section p {
+    margin-bottom: 12px;
+    line-height: 1.7;
+}
+
+.chapter-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chapter-section:last-child {
+    border-bottom: none;
+}
+
+.chapter-section h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.verse {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.verse strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.day-highlight {
+    background: var(--warning-color);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+}
+
+.final-blessing {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid var(--primary-color);
+    text-align: center;
+}
+
+.final-blessing p {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Check Section */
+.check-section {
+    background: var(--card-bg);
+    padding: 24px;
+    border-radius: 14px;
+    text-align: center;
+    margin-top: 16px;
+    box-shadow: var(--ios-shadow);
+}
+
+.check-section h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.check-button, .reset-button {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 18px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    width: 100%;
+    margin-bottom: 12px;
+    box-shadow: var(--ios-shadow);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.reset-button {
+    background: var(--danger-color);
+}
+
+.check-button:active:not(:disabled), .reset-button:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+}
+
+.check-button:disabled {
+    background: var(--border-color);
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.6;
+}
+
+.status {
+    margin-top: 16px;
+    font-size: 15px;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--bg-color);
+    line-height: 1.4;
+}
+
+.success {
+    background: var(--success-color);
+    color: white;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 16px;
+    margin-top: 16px;
+    box-shadow: var(--ios-shadow);
+    font-weight: 500;
+}
+
+/* Reset Info */
+.reset-info {
+    background: var(--card-bg);
+    color: var(--text-color);
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: var(--ios-shadow);
+}
+
+/* Debug Logs */
+.debug-logs {
+    margin: 16px;
+}
+
+.debug-toggle {
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    font-weight: 500;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.debug-toggle:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+}
+
+.debug-content {
+    background: var(--card-bg);
+    color: var(--text-color);
+    padding: 16px;
+    border-radius: 12px;
+    text-align: right;
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+    box-shadow: var(--ios-shadow);
+    direction: rtl;
+}
+
+.debug-content h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--primary-color);
+}
+
+.debug-content p {
+    margin-bottom: 8px;
+    font-family: monospace;
+}
+
+/* Developer Credit */
+.developer-credit {
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    color: var(--secondary-color);
+    font-weight: 400;
+    margin-top: 16px;
+    margin-bottom: env(safe-area-inset-bottom, 34px);
+}
+
+/* iPhone-specific adjustments */
+@supports (padding: env(safe-area-inset-top)) {
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* iPhone X and newer */
+@media (max-height: 812px) and (orientation: portrait) {
+    .container {
+        padding-bottom: env(safe-area-inset-bottom, 34px);
+    }
+}
+
+/* Small iPhones (SE, etc) */
+@media (max-width: 375px) {
+    .counter {
+        font-size: 52px;
+    }
+    
+    .user-selection h2 {
+        font-size: 28px;
+    }
+    
+    .perek-shira {
+        height: 400px;
+        padding: 16px;
+    }
+    
+    .sunset-countdown {
+        font-size: 15px;
+    }
+    
+    .sunset-time, .countdown-time {
+        font-size: 17px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+    .counter {
+        font-size: 48px;
+    }
+    
+    .perek-shira {
+        height: 350px;
+    }
+    
+    .sunset-countdown {
+        font-size: 14px;
+    }
+}
+
+/* Force dark mode styles with higher specificity */
+:where(html.dark-mode, body.dark-mode) {
+    --bg-color: #1c1c1e !important;
+    --text-color: #ffffff !important;
+    --card-bg: #2c2c2e !important;
+    --border-color: #3a3a3c !important;
+    --primary-color: #0a84ff !important;
+    --secondary-color: #8e8e93 !important;
+    --accent-color: #30d158 !important;
+    --success-color: #30d158 !important;
+    --warning-color: #ff9f0a !important;
+    --danger-color: #ff453a !important;
+    --shadow: 0 2px 6px rgba(255,255,255,0.1) !important;
+    --ios-shadow: 0 4px 12px rgba(255,255,255,0.08) !important;
+    --gradient-start: #0a84ff !important;
+    --gradient-end: #6b7280 !important;
+}
+
+/* Ensure all elements use CSS variables with transitions */
+html, body, .container, .user-selection, .whatsapp-form, .sunset-countdown,
+.header, .content, .perek-shira, .check-section, .reset-info,
+.debug-content, .stat-card, .progress-bar, .progress-fill, .theme-toggle,
+.user-selection-card, .whatsapp-card {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Ensure theme toggle button updates */
+.theme-toggle {
+    background: var(--card-bg);
+    box-shadow: var(--ios-shadow);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
