@@ -228,6 +228,296 @@ let userData = JSON.parse(localStorage.getItem('perekShiraData')) || {
     Noa: { count: 0, totalDays: 0, longestStreak: 0, startDate: null, lastCheckDate: null }
 };
 
+// Function to render user buttons dynamically
+function renderUserButtons() {
+    try {
+        const userButtonsContainer = document.querySelector('.user-buttons');
+        if (!userButtonsContainer) {
+            throw new Error('User buttons container not found');
+        }
+        
+        // Clear existing buttons
+        userButtonsContainer.innerHTML = '';
+        
+        // Add existing users with delete option
+        Object.keys(userData).forEach(username => {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-item';
+            
+            const button = document.createElement('button');
+            button.className = 'user-btn';
+            button.textContent = username;
+            button.addEventListener('click', () => selectUser(username));
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-user-btn';
+            deleteButton.textContent = '🗑️';
+            deleteButton.title = `מחק את ${username}`;
+            deleteButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteUser(username);
+            });
+            
+            userDiv.appendChild(button);
+            userDiv.appendChild(deleteButton);
+            userButtonsContainer.appendChild(userDiv);
+        });
+        
+        // Add "Add User" button
+        const addUserButton = document.createElement('button');
+        addUserButton.className = 'user-btn add-user-btn';
+        addUserButton.textContent = '+ הוסף משתמש';
+        addUserButton.addEventListener('click', showAddUserForm);
+        userButtonsContainer.appendChild(addUserButton);
+        
+        console.log('User buttons rendered:', Object.keys(userData));
+    } catch (error) {
+        console.error('Error in renderUserButtons:', error);
+    }
+}
+
+const CLOUD_CONFIG = {
+    apiUrl: 'https://api.jsonbin.io/v3/b',
+    binId: null,
+    apiKey: null
+};
+
+// Load cloud sync settings
+function loadCloudConfig() {
+    const savedBinId = localStorage.getItem('cloudBinId');
+    const savedApiKey = localStorage.getItem('cloudApiKey');
+    
+    if (savedBinId) CLOUD_CONFIG.binId = savedBinId;
+    if (savedApiKey) CLOUD_CONFIG.apiKey = savedApiKey;
+}
+
+// Setup cloud sync
+async function setupCloudSync() {
+    try {
+        const apiKey = prompt('Enter your JSONBin.io API key (get it free from jsonbin.io):');
+        if (!apiKey) return false;
+        
+        CLOUD_CONFIG.apiKey = apiKey;
+        localStorage.setItem('cloudApiKey', apiKey);
+        
+        await saveToCloud();
+        alert('Cloud sync enabled! Data will now sync between devices.');
+        return true;
+    } catch (error) {
+        console.error('Error setting up cloud sync:', error);
+        alert('Failed to setup cloud sync. Please try again.');
+        return false;
+    }
+}
+
+// Save data to cloud
+async function saveToCloud() {
+    try {
+        if (!CLOUD_CONFIG.apiKey) {
+            console.log('No API key, saving locally only');
+            return;
+        }
+
+        const dataToSave = {
+            userData: userData,
+            lastUpdate: new Date().toISOString()
+        };
+
+        let response;
+        if (CLOUD_CONFIG.binId) {
+            response = await fetch(`${CLOUD_CONFIG.apiUrl}/${CLOUD_CONFIG.binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': CLOUD_CONFIG.apiKey
+                },
+                body: JSON.stringify(dataToSave)
+            });
+        } else {
+            response = await fetch(CLOUD_CONFIG.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': CLOUD_CONFIG.apiKey,
+                    'X-Bin-Name': 'perek-shira-tracker'
+                },
+                body: JSON.stringify(dataToSave)
+            });
+        }
+
+        if (response.ok) {
+            const result = await response.json();
+            if (!CLOUD_CONFIG.binId && result.metadata && result.metadata.id) {
+                CLOUD_CONFIG.binId = result.metadata.id;
+                localStorage.setItem('cloudBinId', CLOUD_CONFIG.binId);
+            }
+            console.log('Data saved to cloud successfully');
+        }
+    } catch (error) {
+        console.error('Error saving to cloud:', error);
+    }
+}
+
+// Load data from cloud
+async function loadFromCloud() {
+    try {
+        if (!CLOUD_CONFIG.apiKey || !CLOUD_CONFIG.binId) {
+            return false;
+        }
+
+        const response = await fetch(`${CLOUD_CONFIG.apiUrl}/${CLOUD_CONFIG.binId}/latest`, {
+            method: 'GET',
+            headers: {
+                'X-Master-Key': CLOUD_CONFIG.apiKey
+            }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            const cloudData = result.record;
+            
+            const localUpdate = localStorage.getItem('lastDataUpdate');
+            const cloudUpdate = cloudData.lastUpdate;
+            
+            if (!localUpdate || new Date(cloudUpdate) > new Date(localUpdate)) {
+                userData = cloudData.userData;
+                localStorage.setItem('perekShiraData', JSON.stringify(userData));
+                localStorage.setItem('lastDataUpdate', cloudUpdate);
+                console.log('Loaded newer data from cloud');
+                
+                // Update UI if we're currently viewing
+                if (currentUser) {
+                    updateDisplay();
+                }
+                renderUserButtons();
+                
+                return true;
+            }
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading from cloud:', error);
+        return false;
+    }
+}
+
+// Auto-sync every 30 seconds
+function startAutoSync() {
+    if (CLOUD_CONFIG.apiKey && CLOUD_CONFIG.binId) {
+        setInterval(async () => {
+            await loadFromCloud();
+        }, 30000); // Check every 30 seconds
+    }
+}
+
+// Update your saveData function to include cloud sync:
+function saveData() {
+    try {
+        localStorage.setItem('perekShiraData', JSON.stringify(userData));
+        localStorage.setItem('lastDataUpdate', new Date().toISOString());
+        console.log('User data saved to localStorage');
+        
+        // Also save to cloud if configured
+        saveToCloud();
+    } catch (error) {
+        console.error('Error saving user data:', error);
+    }
+}
+
+// Add cloud controls to debug panel
+function addCloudControls() {
+    try {
+        const debugContent = document.getElementById('debugContent');
+        if (!debugContent) return;
+        
+        const cloudControls = document.createElement('div');
+        cloudControls.innerHTML = `
+            <h4>סנכרון ענן</h4>
+            <button id="setupCloudSync" class="debug-button">הגדר סנכרון ענן</button>
+            <button id="syncNow" class="debug-button">סנכרן עכשיו</button>
+            <button id="forceDownload" class="debug-button">הורד מהענן</button>
+            <p id="cloudStatus">סטטוס ענן: ${CLOUD_CONFIG.binId ? 'מחובר' : 'לא מחובר'}</p>
+        `;
+        
+        debugContent.appendChild(cloudControls);
+        
+        document.getElementById('setupCloudSync')?.addEventListener('click', setupCloudSync);
+        document.getElementById('syncNow')?.addEventListener('click', saveToCloud);
+        document.getElementById('forceDownload')?.addEventListener('click', async () => {
+            const updated = await loadFromCloud();
+            if (updated) {
+                alert('נתונים עודכנו מהענן!');
+            } else {
+                alert('הנתונים המקומיים עדכניים יותר');
+            }
+        });
+    } catch (error) {
+        console.error('Error adding cloud controls:', error);
+    }
+}
+
+// Show add user form
+function showAddUserForm() {
+    try {
+        const username = prompt('הזן שם משתמש חדש:');
+        if (username && username.trim()) {
+            const trimmedUsername = username.trim();
+            if (userData[trimmedUsername]) {
+                alert('משתמש זה כבר קיים!');
+                return;
+            }
+            
+            // Add new user
+            userData[trimmedUsername] = {
+                count: 0,
+                totalDays: 0,
+                longestStreak: 0,
+                startDate: null,
+                lastCheckDate: null
+            };
+            
+            saveData();
+            renderUserButtons();
+            console.log(`New user added: ${trimmedUsername}`);
+        }
+    } catch (error) {
+        console.error('Error in showAddUserForm:', error);
+    }
+}
+
+// Delete user function
+function deleteUser(username) {
+    try {
+        if (Object.keys(userData).length <= 1) {
+            alert('לא ניתן למחוק את המשתמש האחרון!');
+            return;
+        }
+        
+        const confirmDelete = confirm(`האם אתה בטוח שברצונך למחוק את המשתמש "${username}"? כל הנתונים שלו יימחקו לצמיתות!`);
+        if (!confirmDelete) {
+            return;
+        }
+        
+        // If we're deleting the current user, go back to selection
+        if (currentUser === username) {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            showUserSelection();
+        }
+        
+        // Delete the user
+        delete userData[username];
+        saveData();
+        renderUserButtons();
+        
+        console.log(`User deleted: ${username}`);
+        alert(`המשתמש "${username}" נמחק בהצלחה`);
+    } catch (error) {
+        console.error('Error in deleteUser:', error);
+        alert('שגיאה במחיקת המשתמש');
+    }
+}
+
 // Save user data to localStorage
 function saveData() {
     try {
@@ -279,6 +569,8 @@ function showUserSelection() {
         whatsAppForm.style.display = 'none';
         userSelection.style.display = 'flex';
         console.log('Showing user selection screen');
+        renderUserButtons();
+
     } catch (error) {
         console.error('Error in showUserSelection:', error);
     }
@@ -740,28 +1032,48 @@ async function sendNotification(topic, message) {
 }
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
+loadCloudConfig();
+        
+        // Try to load from cloud
+        const cloudUpdated = await loadFromCloud();
+        
+        // If no cloud data, use local storage
+        if (!cloudUpdated) {
+            userData = JSON.parse(localStorage.getItem('perekShiraData')) || {
+                Motty: { count: 0, totalDays: 0, longestStreak: 0, startDate: null, lastCheckDate: null },
+                Noa: { count: 0, totalDays: 0, longestStreak: 0, startDate: null, lastCheckDate: null }
+            };
+        }
+        
+        // Render user buttons
+        renderUserButtons();
+        
+        // Start auto-sync
+        startAutoSync();
+        // Add cloud controls to debug panel (call this after debug content is ready)
+        setTimeout(addCloudControls, 1000);
         // Attach event listeners
         const themeToggle = document.getElementById('themeToggle');
         const debugToggle = document.getElementById('debugToggle');
         const resetButton = document.querySelector('.reset-button');
         const checkButton = document.getElementById('checkButton');
+
+
         const whatsappButton = document.querySelector('button[onclick="showWhatsAppForm()"]') || document.querySelector('.user-btn:nth-child(3)');
         const whatsappSubmit = document.querySelector('.whatsapp-submit');
         const backButtons = document.querySelectorAll('.back-button');
-        const mottyButton = document.querySelector('button[onclick="selectUser(\'Motty\')"]') || document.querySelector('.user-btn:nth-child(1)');
-        const noaButton = document.querySelector('button[onclick="selectUser(\'Noa\')"]') || document.querySelector('.user-btn:nth-child(2)');
+        
 
         if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
         if (debugToggle) debugToggle.addEventListener('click', toggleDebugLogs);
         if (resetButton) resetButton.addEventListener('click', confirmReset);
-        if (checkButton) checkButton.addEventListener('click', markAsRead);
+if (checkButton) checkButton.addEventListener('click', markAsRead);
         if (whatsappButton) whatsappButton.addEventListener('click', showWhatsAppForm);
         if (whatsappSubmit) whatsappSubmit.addEventListener('click', registerWhatsApp);
         if (backButtons) backButtons.forEach(button => button.addEventListener('click', showUserSelection));
-        if (mottyButton) mottyButton.addEventListener('click', () => selectUser('Motty'));
-        if (noaButton) noaButton.addEventListener('click', () => selectUser('Noa'));
+    
 
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser && userData[savedUser]) {
